@@ -1,5 +1,32 @@
 import { MediaFile } from '../models/MediaFile.js';
-import { getRow, insertRow, updateRow } from '../utils/sqlite.js';
+import { getRow, getRows, insertRow, updateRow } from '../utils/sqlite.js';
+
+/**
+ * @param {number} id
+ * @returns {Promise<MediaFile>}
+ */
+export async function getMedia(id) {
+    const row = await getRow('SELECT * FROM media_public_view WHERE id=?;', [id]);
+
+    if (!row) {
+        return null;
+    }
+    return MediaFile.fromRow(row);
+}
+
+/**
+ * @param {Record<string, string|number|boolean>} [options]
+ * @returns {Promise<MediaFile[]>}
+ */
+export async function getMediaList(options = {}) {
+    const rows = await getRows('SELECT * FROM media_public_view LIMIT ?', [options.limit]);
+
+    if (Array.isArray(rows)) {
+        return rows.map((row) => MediaFile.fromRow(row));
+    } else {
+        return [];
+    }
+}
 
 /**
  * Insert new media file record
