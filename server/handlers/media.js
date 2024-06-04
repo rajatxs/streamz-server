@@ -1,11 +1,13 @@
 import util from 'util';
 import { join } from 'path';
 import { createWriteStream, existsSync } from 'fs';
-import { rename, mkdir } from 'fs/promises';
+import { rename, mkdir, readdir } from 'fs/promises';
 import { pipeline } from 'stream';
 import config from '../../config.js';
 import logger from '../../utils/logger.js';
 import {
+    getMedia,
+    getMediaList,
     createMediaFile,
     mediaExists,
     updateMediaStatus,
@@ -18,6 +20,97 @@ import {
 } from '../../services/video.js';
 
 const pump = util.promisify(pipeline);
+
+/**
+ * @type {import('fastify').RouteHandler}
+ * @version 1
+ */
+export async function handleMediaGetList_v1(request, reply) {
+    const limit = request.query.limit || 16;
+    let list;
+
+    try {
+        list = await getMediaList({ limit });
+    } catch (error) {
+        return reply.status(500).send({
+            message: 'Failed to get media list',
+        });
+    }
+
+    reply.status(200).send({
+        message: 'Ok',
+        result: list,
+    });
+}
+
+/**
+ * @type {import('fastify').RouteHandler}
+ * @version 1
+ */
+export async function handleMediaGet_v1(request, reply) {
+    const mediaId = Number(request.params.id);
+
+    /** @type {import('../../models/MediaFile.js').MediaFile} */
+    let media;
+
+    try {
+        media = await getMedia(mediaId);
+    } catch (error) {
+        return reply.status(500).send({
+            message: 'Failed to get media',
+        });
+    }
+
+    if (!media) {
+        return reply.status(404).send({
+            message: 'Media not found',
+        });
+    }
+
+    return reply.status(200).send({
+        message: 'Ok',
+        result: media,
+    });
+}
+
+/**
+ * @type {import('fastify').RouteHandler}
+ * @version 1
+ */
+export async function handleMediaGetSources_v1(request, reply) {
+    const mediaId = request.params.id;
+    let sources = [];
+
+    try {
+        let files = await readdir(join(config.mediaDir, mediaId));
+        sources = files
+            .filter((f) => f.endsWith('.mp4'))
+            .map((f) => {
+                const [name] = f.split('.');
+                return {
+                    name,
+                    filename: f,
+                    path: `/media/files/${mediaId}/${f}`,
+                };
+            });
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            reply.status(200).send({
+                message: 'Ok',
+                result: [],
+            });
+        } else {
+            return reply.status(500).send({
+                message: 'Failed to get sources',
+            });
+        }
+    }
+
+    reply.status(200).send({
+        message: 'Ok',
+        result: sources,
+    });
+}
 
 /**
  * @type {import('fastify').RouteHandler}
