@@ -5,7 +5,12 @@ import { rename, mkdir } from 'fs/promises';
 import { pipeline } from 'stream';
 import config from '../../config.js';
 import logger from '../../utils/logger.js';
-import { createMediaFile, mediaExists, updateMediaStatus } from '../../services/media.js';
+import {
+    createMediaFile,
+    mediaExists,
+    updateMediaStatus,
+    setMediaResolution,
+} from '../../services/media.js';
 import { getVideoResolution, convertVideoResolution } from '../../services/video.js';
 
 const pump = util.promisify(pipeline);
@@ -91,6 +96,7 @@ export async function handleMediaUpload_v1(request, reply) {
 
         videoWidth = _resolution.width;
         videoHeight = _resolution.height;
+        await setMediaResolution(mediaId, [videoWidth, videoHeight]);
     } catch (error) {
         logger.log({
             level: 'error',
@@ -107,12 +113,16 @@ export async function handleMediaUpload_v1(request, reply) {
     // Convert 1080p resolution
     if (videoHeight > 1080 && videoWidth > 1920) {
         try {
-            const converted = await convertVideoResolution(
+            await convertVideoResolution(
                 originalVideoFilePath,
                 join(videoBucket, '1080p.mp4'),
                 '1920x1080',
             );
-            console.log('1080p converted', converted);
+            logger.log({
+                level: 'info',
+                label: 'handler:media',
+                message: `Video ${mediaId} converted to 1080p`,
+            });
         } catch (error) {
             logger.log({
                 level: 'error',
@@ -125,12 +135,16 @@ export async function handleMediaUpload_v1(request, reply) {
     // Convert 720p resolution
     if (videoHeight > 720 && videoWidth > 1280) {
         try {
-            const converted = await convertVideoResolution(
+            await convertVideoResolution(
                 originalVideoFilePath,
                 join(videoBucket, '720p.mp4'),
                 '1280x720',
             );
-            console.log('720p converted', converted);
+            logger.log({
+                level: 'info',
+                label: 'handler:media',
+                message: `Video ${mediaId} converted to 720p`,
+            });
         } catch (error) {
             logger.log({
                 level: 'error',
@@ -143,12 +157,16 @@ export async function handleMediaUpload_v1(request, reply) {
     // Convert 480p resolution
     if (videoHeight > 480 && videoWidth > 854) {
         try {
-            const converted = await convertVideoResolution(
+            await convertVideoResolution(
                 originalVideoFilePath,
                 join(videoBucket, '480p.mp4'),
                 '854x480',
             );
-            console.log('480p converted', converted);
+            logger.log({
+                level: 'info',
+                label: 'handler:media',
+                message: `Video ${mediaId} converted to 480p`,
+            });
         } catch (error) {
             logger.log({
                 level: 'error',
@@ -158,7 +176,13 @@ export async function handleMediaUpload_v1(request, reply) {
         }
     }
 
-    await rename(originalVideoFilePath, join(rootDir, mediaId.toString(), `${videoHeight}.mp4`));
+    await rename(originalVideoFilePath, join(rootDir, mediaId.toString(), `${videoHeight}p.mp4`));
+    logger.log({
+        level: 'info',
+        label: 'handler:media',
+        message: `Original video ${mediaId} renamed to ${videoHeight}p.mp4`,
+    });
+
     await updateMediaStatus(mediaId, 'done');
 
     reply.status(200).send({
