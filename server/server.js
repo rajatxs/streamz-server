@@ -2,6 +2,7 @@ import { join } from 'path';
 import Fastify from 'fastify';
 import FastifyMultipart from '@fastify/multipart';
 import FastifyStatic from '@fastify/static';
+import config from '../config.js';
 import logger from '../utils/logger.js';
 import { registerRoutes } from './routes.js';
 
@@ -41,7 +42,7 @@ export async function startServerInstance(options) {
     });
 
     instance.register(FastifyStatic, {
-        root: join(import.meta.dirname, '..', 'temp'),
+        root: config.mediaDir,
         prefix: '/media/files',
     });
 
