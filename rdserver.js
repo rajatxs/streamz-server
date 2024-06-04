@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync } from 'fs';
+import { mkdir } from 'fs/promises';
 import { startServerInstance, stopServerInstance } from './server/server.js';
 import { openSQLiteDatabase, closeSQLiteDatabase } from './utils/sqlite.js';
 import config from './config.js';
@@ -35,12 +36,12 @@ async function terminate() {
         logger.info(`Running in ${config.env} mode`);
 
         if (!existsSync(dataDir)) {
-            mkdirSync(dataDir);
+            await mkdir(dataDir);
             logger.info(`Created data directory at ${dataDir}`);
         }
 
         if (!existsSync(mediaDir)) {
-            mkdirSync(mediaDir);
+            await mkdir(mediaDir);
             logger.info(`Created media directory at ${mediaDir}`);
         }
 
