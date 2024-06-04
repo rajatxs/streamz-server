@@ -11,7 +11,11 @@ import {
     updateMediaStatus,
     setMediaResolution,
 } from '../../services/media.js';
-import { getVideoResolution, convertVideoResolution } from '../../services/video.js';
+import {
+    getVideoResolution,
+    convertVideoResolution,
+    generateVideoThumbnail,
+} from '../../services/video.js';
 
 const pump = util.promisify(pipeline);
 
@@ -89,6 +93,7 @@ export async function handleMediaUpload_v1(request, reply) {
     // Write video stream
     await pump(data.file, createWriteStream(originalVideoFilePath));
     await updateMediaStatus(mediaId, 'uploaded');
+    await generateVideoThumbnail(originalVideoFilePath, videoBucket);
 
     // Get original video resolution
     try {
