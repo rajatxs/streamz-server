@@ -31,3 +31,12 @@ export async function mediaExists(id) {
 export async function updateMediaStatus(id, status) {
     return updateRow('UPDATE media SET status=? WHERE id=?;', [status, id]);
 }
+
+/**
+ * @param {number} id
+ * @param {number[]} resolution
+ * @returns {Promise<number>}
+ */
+export async function setMediaResolution(id, resolution = [0, 0]) {
+    return updateRow('UPDATE media SET resolution=? WHERE id=?;', [resolution.join('x'), id]);
+}
