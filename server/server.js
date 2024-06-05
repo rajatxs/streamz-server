@@ -2,6 +2,7 @@ import { join } from 'path';
 import Fastify from 'fastify';
 import FastifyMultipart from '@fastify/multipart';
 import FastifyStatic from '@fastify/static';
+import FastifyCORS from '@fastify/cors';
 import config from '../config.js';
 import logger from '../utils/logger.js';
 import { registerRoutes } from './routes.js';
@@ -32,6 +33,18 @@ export async function startServerInstance(options) {
         logger: false,
     });
 
+    instance.register(FastifyCORS, {
+        origin: '*',
+        allowedHeaders: [
+            'Accept',
+            'Content-Type',
+            'Authorization',
+            'X-Api-Key',
+            'X-User-Id',
+            'X-Request-Id',
+        ],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'HEAD', 'OPTIONS', 'DELETE'],
+    });
 
     instance.register(FastifyMultipart, {
         attachFieldsToBody: false,
