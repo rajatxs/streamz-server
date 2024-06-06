@@ -87,12 +87,33 @@ export async function handleMediaGetSources_v1(request, reply) {
             .filter((f) => f.endsWith('.mp4'))
             .map((f) => {
                 const [name] = f.split('.');
+                const id = Number(name.slice(0, -1));
+
+                /** @type {string} */
+                let label;
+
+                switch (name) {
+                    default:
+                    case '480p':
+                        label = 'SD';
+                        break;
+                    case '720p':
+                        label = 'HD';
+                        break;
+                    case '1080p':
+                        label = 'FHD';
+                        break;
+                }
+
                 return {
+                    id,
                     name,
+                    label,
                     filename: f,
                     path: `/media/files/${mediaId}/${f}`,
                 };
-            });
+            })
+            .sort((s1, s2) => s2.id - s1.id);
     } catch (error) {
         if (error.code === 'ENOENT') {
             reply.status(200).send({
