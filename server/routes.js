@@ -3,7 +3,6 @@ import { handlePing } from './handlers/handlers.js';
 import {
     handleMediaGetList_v1,
     handleMediaGet_v1,
-    handleMediaGetSources_v1,
     handleMediaCreate_v1,
     handleMediaUpload_v1,
 } from './handlers/media.js';
@@ -33,7 +32,6 @@ export function registerRoutes(instance) {
 
     instance.get('/v1/media', handleMediaGetList_v1);
     instance.get('/v1/media/:id', handleMediaGet_v1);
-    instance.get('/v1/media/:id/sources', handleMediaGetSources_v1);
     instance.post(
         '/v1/media',
         {
