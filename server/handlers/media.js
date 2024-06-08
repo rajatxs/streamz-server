@@ -1,7 +1,7 @@
 import util from 'util';
 import { join } from 'path';
 import { createWriteStream, existsSync } from 'fs';
-import { rename, mkdir, readdir } from 'fs/promises';
+import { mkdir, readdir } from 'fs/promises';
 import { pipeline } from 'stream';
 import { fork } from 'child_process';
 import config from '../../config.js';
@@ -11,14 +11,8 @@ import {
     getMediaList,
     createMediaFile,
     mediaExists,
-    updateMediaStatus,
-    setMediaResolution,
+    updateMediaState,
 } from '../../services/media.js';
-import {
-    getVideoResolution,
-    convertVideoResolution,
-    generateVideoThumbnail,
-} from '../../services/video.js';
 
 const pump = util.promisify(pipeline);
 
@@ -196,18 +190,14 @@ export async function handleMediaUpload_v1(request, reply) {
 
     // Create video bucket directory
     if (!existsSync(videoBucket)) {
-        await mkdir(videoBucket);
+        await mkdir(videoBucket, { recursive: true });
     }
 
     // Write video stream
     await pump(data.file, createWriteStream(originalVideoFilePath));
-    await updateMediaStatus(mediaId, 'uploaded');
+    await updateMediaState(mediaId, 'saved');
 
     const proc = fork('workers/media-parser', [videoBucket]);
-
-    proc.on('spawn', function () {
-        proc.send('preset');
-    });
 
     proc.on('error', function (error) {
         logger.log({
@@ -215,6 +205,10 @@ export async function handleMediaUpload_v1(request, reply) {
             label: 'worker:media-parser',
             message: error.message,
         });
+    });
+
+    proc.on('spawn', function () {
+        proc.send('preset');
     });
 
     proc.on('message', async (message) => {
@@ -226,10 +220,10 @@ export async function handleMediaUpload_v1(request, reply) {
 
         if (message === 'preset:done') {
             proc.send('parse');
-            await updateMediaStatus(mediaId, 'parsing');
+            await updateMediaState(mediaId, 'parsing');
         } else if (message === 'parse:done') {
             proc.send('done');
-            await updateMediaStatus(mediaId, 'done');
+            await updateMediaState(mediaId, 'done');
         }
     });
 
