@@ -161,15 +161,14 @@ async function prescript() {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title VARCHAR(100) DEFAULT "New video",
                 desc TEXT,
-                resolution VARCHAR(10) DEFAULT "0x0",
-                status VARCHAR(16) DEFAULT "created",
+                state VARCHAR(12) DEFAULT 0,
                 public BOOLEAN DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );        
+            );
         `,
         CREATE_VIEW_MEDIA: `
             CREATE VIEW IF NOT EXISTS \`media_public_view\` AS 
-            SELECT id, title, desc, resolution, status, public, STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at 
+            SELECT id, title, desc, state, public, STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at 
             FROM media WHERE public=1 ORDER BY id DESC;
         `,
     };

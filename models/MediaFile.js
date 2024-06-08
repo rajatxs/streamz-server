@@ -8,11 +8,8 @@ export class MediaFile {
     /** @type {string} */
     description = '';
 
-    /** @type {number[]} */
-    resolution = [0, 0];
-
     /** @type {string} */
-    status = 'created';
+    state = 'created';
 
     /** @type {boolean} */
     public = true;
@@ -30,9 +27,8 @@ export class MediaFile {
 
         mf.id = row.id;
         mf.title = row.title;
-        mf.desc = row.desc;
-        mf.resolution = row.resolution.split('x').map((i) => Number(i));
-        mf.status = row.status;
+        mf.description = row.desc;
+        mf.state = row.state;
         mf.public = Boolean(row.public);
         mf.createdAt = new Date(row.created_at);
         return mf;
