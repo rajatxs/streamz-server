@@ -161,7 +161,7 @@ async function prescript() {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title VARCHAR(100) DEFAULT "New video",
                 desc TEXT,
-                state VARCHAR(12) DEFAULT 0,
+                state VARCHAR(12) DEFAULT "created",
                 public BOOLEAN DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
