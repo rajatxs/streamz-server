@@ -22,10 +22,11 @@ const pump = util.promisify(pipeline);
  */
 export async function handleMediaGetList_v1(request, reply) {
     const limit = request.query.limit || 16;
+    const state = request.query.state || 'done';
     let list;
 
     try {
-        list = await getMediaList({ limit });
+        list = await getMediaList({ state, limit });
     } catch (error) {
         return reply.status(500).send({
             message: 'Failed to get media list',

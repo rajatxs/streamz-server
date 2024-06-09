@@ -19,7 +19,10 @@ export async function getMedia(id) {
  * @returns {Promise<MediaFile[]>}
  */
 export async function getMediaList(options = {}) {
-    const rows = await getRows('SELECT * FROM media_public_view LIMIT ?', [options.limit]);
+    const rows = await getRows('SELECT * FROM media_public_view WHERE state=? LIMIT ?', [
+        options.state,
+        options.limit,
+    ]);
 
     if (Array.isArray(rows)) {
         return rows.map((row) => MediaFile.fromRow(row));
