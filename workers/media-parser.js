@@ -13,12 +13,12 @@ import { execSync } from 'child_process';
 
 // Check if a media_dir is provided
 if (process.argv.length < 3) {
-    console.log(`Error: missing media_id parameter`);
+    console.log(`Error: missing source file and output directory path`);
     process.exit(1);
 }
 
-const mediaDir = process.argv[2];
-const sourceFile = join(mediaDir, '_original.mp4');
+const sourceFile = process.argv[2];
+const mediaDir = process.argv[3];
 const thumbDir = join(mediaDir, 'thumbs');
 const masterPlaylist = join(mediaDir, 'playlist.m3u8');
 
@@ -72,17 +72,14 @@ process.on('message', async function (message) {
  * @returns {Promise<void>}
  */
 async function preset() {
-    // Check if media directory exists
-    if (!existsSync(mediaDir)) {
-        console.log(`Error: no such media directory: ${mediaDir}`);
-        process.exit(1);
-    }
-
     // Check if source file exists
     if (!existsSync(sourceFile)) {
         console.log(`Error: no such source file: ${sourceFile}`);
         process.exit(1);
     }
+
+    // Create media root directory
+    await mkdir(mediaDir, { recursive: true });
 
     // Create thumbnail image directory
     await mkdir(thumbDir, { recursive: true });
