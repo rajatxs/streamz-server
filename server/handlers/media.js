@@ -1,11 +1,8 @@
 import util from 'util';
 import { join } from 'path';
-import { createWriteStream, existsSync } from 'fs';
-import { mkdir } from 'fs/promises';
+import { createWriteStream } from 'fs';
 import { pipeline } from 'stream';
-import { fork } from 'child_process';
 import config from '../../config.js';
-import logger from '../../utils/logger.js';
 import {
     getMedia,
     getMediaList,
@@ -104,10 +101,6 @@ export async function handleMediaCreate_v1(request, reply) {
 export async function handleMediaUpload_v1(request, reply) {
     const mediaId = Number(request.params.mid);
     const data = await request.file();
-    const rootDir = config.mediaDir;
-
-    /** @type {string} */
-    let videoBucket;
 
     /** @type {string} */
     let originalVideoFilePath;
@@ -126,47 +119,11 @@ export async function handleMediaUpload_v1(request, reply) {
         });
     }
 
-    videoBucket = join(rootDir, mediaId.toString());
-    originalVideoFilePath = join(rootDir, mediaId.toString(), '_original.mp4');
-
-    // Create video bucket directory
-    if (!existsSync(videoBucket)) {
-        await mkdir(videoBucket, { recursive: true });
-    }
+    originalVideoFilePath = join(config.uploadDir, `${mediaId.toString()}.mp4`);
 
     // Write video stream
     await pump(data.file, createWriteStream(originalVideoFilePath));
     await updateMediaState(mediaId, 'saved');
-
-    const proc = fork('workers/media-parser', [videoBucket]);
-
-    proc.on('error', function (error) {
-        logger.log({
-            level: 'error',
-            label: 'worker:media-parser',
-            message: error.message,
-        });
-    });
-
-    proc.on('spawn', function () {
-        proc.send('preset');
-    });
-
-    proc.on('message', async (message) => {
-        logger.log({
-            level: 'info',
-            label: 'worker:media-parser',
-            message: `Message received ${message}`,
-        });
-
-        if (message === 'preset:done') {
-            proc.send('parse');
-            await updateMediaState(mediaId, 'parsing');
-        } else if (message === 'parse:done') {
-            proc.send('done');
-            await updateMediaState(mediaId, 'done');
-        }
-    });
 
     reply.status(200).send({
         message: 'File saved',
