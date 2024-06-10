@@ -37,4 +37,12 @@ export default {
     get mediaDir() {
         return join(this.dataDir, 'media');
     },
+
+    /**
+     * Media uploads directory path
+     * @type {string}
+     */
+    get uploadDir() {
+        return join(this.dataDir, 'uploads');
+    },
 };
