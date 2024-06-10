@@ -1,5 +1,5 @@
 import { MediaFile } from '../models/MediaFile.js';
-import { getRow, getRows, insertRow, updateRow } from '../utils/sqlite.js';
+import { getRow, getRows, insertRow, updateRow, deleteRow } from '../utils/sqlite.js';
 
 /**
  * @param {number} id
@@ -78,4 +78,12 @@ export async function mediaExists(id) {
  */
 export async function updateMediaState(id, status) {
     return updateRow('UPDATE media SET state=? WHERE id=?;', [status, id]);
+}
+
+/**
+ * @param {number} id
+ * @returns {Promise<number>}
+ */
+export function deleteMedia(id) {
+    return deleteRow("DELETE FROM media WHERE id=?;", id);
 }
