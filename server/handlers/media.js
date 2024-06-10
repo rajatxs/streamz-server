@@ -1,7 +1,9 @@
 import util from 'util';
 import { join } from 'path';
 import { createWriteStream } from 'fs';
+import { rename, rm } from 'fs/promises';
 import { pipeline } from 'stream';
+import logger from '../../utils/logger.js';
 import config from '../../config.js';
 import {
     getMedia,
@@ -9,6 +11,7 @@ import {
     createMediaFile,
     mediaExists,
     updateMediaState,
+    deleteMedia,
 } from '../../services/media.js';
 
 const pump = util.promisify(pipeline);
@@ -102,9 +105,6 @@ export async function handleMediaUpload_v1(request, reply) {
     const mediaId = Number(request.params.mid);
     const data = await request.file();
 
-    /** @type {string} */
-    let originalVideoFilePath;
-
     // Allow only mp4 file format
     if (data.mimetype !== 'video/mp4') {
         return reply.status(400).send({
@@ -119,14 +119,43 @@ export async function handleMediaUpload_v1(request, reply) {
         });
     }
 
-    originalVideoFilePath = join(config.uploadDir, `${mediaId.toString()}.mp4`);
+    const tempFilePath = join(config.uploadDir, `_${mediaId.toString()}.mp4`);
+    const filePath = join(config.uploadDir, `${mediaId.toString()}.mp4`);
 
     // Write video stream
-    await pump(data.file, createWriteStream(originalVideoFilePath));
+    await pump(data.file, createWriteStream(tempFilePath));
     await updateMediaState(mediaId, 'saved');
+    await rename(tempFilePath, filePath);
 
     reply.status(200).send({
         message: 'File saved',
+        result: {
+            id: mediaId,
+        },
+    });
+}
+
+/**
+ * @type {import('fastify').RouteHandler}
+ * @version 1
+ */
+export async function handleMediaDelete_v1(request, reply) {
+    const mediaId = Number(request.params.mid);
+    const mediaDir = join(config.mediaDir, mediaId.toString());
+
+    try {
+        await deleteMedia(mediaId);
+        await rm(mediaDir, { recursive: true, force: true });
+    } catch (error) {
+        logger.log({
+            level: 'error',
+            label: 'handler:media:handleMediaDelete_v1',
+            message: error.message,
+        });
+    }
+
+    reply.status(200).send({
+        message: 'Media deleted',
         result: {
             id: mediaId,
         },
