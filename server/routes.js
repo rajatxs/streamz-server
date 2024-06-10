@@ -5,6 +5,7 @@ import {
     handleMediaGet_v1,
     handleMediaCreate_v1,
     handleMediaUpload_v1,
+    handleMediaDelete_v1,
 } from './handlers/media.js';
 
 /**
@@ -62,6 +63,7 @@ export function registerRoutes(instance) {
         handleMediaCreate_v1,
     );
     instance.post('/v1/media/:mid/upload', handleMediaUpload_v1);
+    instance.delete('/v1/media/:mid', handleMediaDelete_v1);
 
     logger.log({
         level: 'info',
