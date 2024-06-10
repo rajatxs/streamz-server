@@ -32,6 +32,24 @@ export async function getMediaList(options = {}) {
 }
 
 /**
+ * @param {string} state
+ * @param {limit} limit
+ * @returns {Promise<number[]>}
+ */
+export async function getMediaIds(state = 'done', limit = 5) {
+    const rows = await getRows('SELECT id FROM media_public_view WHERE state=? LIMIT ?', [
+        state,
+        limit,
+    ]);
+
+    if (Array.isArray(rows)) {
+        return rows.map((row) => row.id);
+    } else {
+        return [];
+    }
+}
+
+/**
  * Insert new media file record
  * @param {Pick<MediaFile, 'title'|'description'|'public'} data
  * @returns {Promise<number>}
