@@ -34,6 +34,11 @@ async function terminate() {
 
         logger.info(`Running in ${config.env} mode`);
 
+        if (!existsSync(config.distDir)) {
+            await mkdir(config.distDir);
+            logger.info(`Created dist directory at ${config.distDir}`);
+        }
+
         if (!existsSync(config.dataDir)) {
             await mkdir(config.dataDir);
             logger.info(`Created data directory at ${config.dataDir}`);
