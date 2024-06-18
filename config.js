@@ -45,4 +45,12 @@ export default {
     get uploadDir() {
         return join(this.dataDir, 'uploads');
     },
+    
+    /**
+     * Dir directory path
+     * @type {string}
+     */
+    get distDir() {
+        return join(import.meta.dirname, 'dist');
+    },
 };
