@@ -1,11 +1,10 @@
-import { join } from 'path';
 import Fastify from 'fastify';
 import FastifyMultipart from '@fastify/multipart';
 import FastifyStatic from '@fastify/static';
 import FastifyCORS from '@fastify/cors';
 import config from '../config.js';
 import logger from '../utils/logger.js';
-import { registerRoutes } from './routes.js';
+import { apiRoutes } from './routes/routes.js';
 
 /** @type {import('fastify').FastifyInstance} */
 var instance;
@@ -59,12 +58,14 @@ export async function startServerInstance(options) {
         prefix: '/media/files',
     });
 
-    // instance.addHook('onRequest', function (request, reply, done) {
-    //     console.log('new req', request.method, request.routeOptions.url);
-    //     done();
-    // });
+    instance.register(apiRoutes, { prefix: '/api' });
 
-    registerRoutes(instance);
+    /**
+    instance.addHook('onRequest', function (request, reply, done) {
+        console.log('new req', request.method, request.routeOptions.url);
+        done();
+    });
+    */
 
     url = await instance.listen({
         host: options.host,
