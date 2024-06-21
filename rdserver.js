@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { join } from 'path';
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
+import { homedir } from 'os';
 import { startServerInstance, stopServerInstance } from './server/server.js';
 import { openSQLiteDatabase, closeSQLiteDatabase } from './utils/sqlite.js';
 import { startMediaParserService, stopMediaParserService } from './services/media-parser.js';
@@ -9,6 +11,7 @@ import config from './config.js';
 import logger from './utils/logger.js';
 
 const cmd = new Command('rdserver');
+Reflect.set(global, 'config', {});
 
 async function terminate() {
     try {
@@ -23,19 +26,19 @@ async function terminate() {
 }
 
 (function () {
-    cmd.version('0.0.1', '-v, --version');
+    cmd.version('0.0.6', '-v, --version');
     cmd.option('-h, --host <string>', 'server hostname', '127.0.0.1');
-    cmd.option('-p, --port <number>', 'server port', 8227);
+    cmd.option('-p, --port <number>', 'server port', '8227');
+    cmd.option('-r, --root <string>', 'data root directory', join(homedir(), '.stzdata'));
     cmd.description('Streamz media server');
 
     cmd.action(async function (options) {
         process.on('SIGTERM', terminate);
         process.on('SIGINT', terminate);
-
-        logger.info(`Running in ${config.env} mode`);
+        config.preset({ rootDir: options.root });
 
         if (!existsSync(config.dataDir)) {
-            await mkdir(config.dataDir);
+            await mkdir(config.dataDir, { recursive: true });
             logger.info(`Created data directory at ${config.dataDir}`);
         }
 
