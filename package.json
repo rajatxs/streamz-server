@@ -1,6 +1,6 @@
 {
     "name": "@rxpm/streamz-server",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Streamz backend server",
     "main": "rdserver.js",
     "bin": {
@@ -13,7 +13,7 @@
     "markdown": "github",
     "scripts": {
         "start": "node rdserver.js start",
-        "dev:start": "cross-env NODE_ENV=development nodemon rdserver.js start"
+        "dev:start": "nodemon rdserver.js start -r appdata"
     },
     "keywords": [
         "streamz",
