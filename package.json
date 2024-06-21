@@ -2,9 +2,9 @@
     "name": "@rxpm/streamz-server",
     "version": "0.0.6",
     "description": "Streamz backend server",
-    "main": "rdserver.js",
+    "main": "cmd/streamz.js",
     "bin": {
-        "rdserver": "rdserver.js"
+        "streamz": "cmd/streamz.js"
     },
     "preferGlobal": true,
     "type": "module",
@@ -12,8 +12,8 @@
     "license": "ISC",
     "markdown": "github",
     "scripts": {
-        "start": "node rdserver.js start",
-        "dev:start": "nodemon rdserver.js start -r appdata"
+        "start": "node cmd/streamz.js start",
+        "dev:start": "nodemon cmd/streamz.js start -r appdata"
     },
     "keywords": [
         "streamz",

@@ -4,13 +4,13 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { homedir } from 'os';
-import { startServerInstance, stopServerInstance } from './server/server.js';
-import { openSQLiteDatabase, closeSQLiteDatabase } from './utils/sqlite.js';
-import { startMediaParserService, stopMediaParserService } from './services/media-parser.js';
-import config from './config.js';
-import logger from './utils/logger.js';
+import { startServerInstance, stopServerInstance } from '../server/server.js';
+import { startMediaParserService, stopMediaParserService } from '../services/media-parser.js';
+import { openSQLiteDatabase, closeSQLiteDatabase } from '../utils/sqlite.js';
+import config from '../config.js';
+import logger from '../utils/logger.js';
 
-const cmd = new Command('rdserver');
+const cmd = new Command('streamz');
 Reflect.set(global, 'config', {});
 
 async function terminate() {
