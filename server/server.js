@@ -54,13 +54,8 @@ export async function startServerInstance(options) {
     });
 
     instance.register(FastifyStatic, {
-        root: config.distDir,
-    });
-
-    instance.register(FastifyStatic, {
         root: config.mediaDir,
         prefix: '/media/files',
-        decorateReply: false,
     });
 
     instance.register(apiRoutes, { prefix: '/api' });

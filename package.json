@@ -1,6 +1,6 @@
 {
     "name": "@rxpm/streamz-server",
-    "version": "0.0.1",
+    "version": "0.0.5",
     "description": "Streamz backend server",
     "main": "rdserver.js",
     "bin": {
