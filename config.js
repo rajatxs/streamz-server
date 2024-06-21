@@ -1,25 +1,17 @@
-import { join } from 'path';
-import { homedir } from 'os';
+import { join, isAbsolute } from 'path';
+
+/**
+ * @typedef ConfigPresetOptions
+ * @property {string} rootDir - Data root directory
+ */
 
 export default {
-    /**
-     * Platform environment
-     * @type {'prod'|'dev'}
-     */
-    get env() {
-        return process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
-    },
-
     /**
      * Data root directory path
      * @type {string}
      */
     get dataDir() {
-        if (this.env === 'prod') {
-            return join(homedir(), '.stzdata');
-        } else {
-            return join(import.meta.dirname, '.stzdata');
-        }
+        return Reflect.get(global.config, 'dataDir');
     },
 
     /**
@@ -27,7 +19,7 @@ export default {
      * @type {string}
      */
     get databaseFile() {
-        return join(this.dataDir, 'stz.db');
+        return Reflect.get(global.config, 'databaseFile');
     },
 
     /**
@@ -35,7 +27,7 @@ export default {
      * @type {string}
      */
     get mediaDir() {
-        return join(this.dataDir, 'media');
+        return Reflect.get(global.config, 'mediaDir');
     },
 
     /**
@@ -43,6 +35,30 @@ export default {
      * @type {string}
      */
     get uploadDir() {
-        return join(this.dataDir, 'uploads');
+        return Reflect.get(global.config, 'uploadDir');
+    },
+
+    /**
+     * @param {ConfigPresetOptions} options
+     * @returns {void}
+     */
+    preset(options) {
+        /** @type {string} */
+        let dataDir;
+
+        if (!Reflect.has(global, 'config')) {
+            Reflect.set(global, 'config', {});
+        }
+
+        if (isAbsolute(options.rootDir)) {
+            dataDir = options.rootDir;
+        } else {
+            dataDir = join(process.cwd(), options.rootDir);
+        }
+
+        Reflect.set(global.config, 'dataDir', dataDir);
+        Reflect.set(global.config, 'databaseFile', join(dataDir, 'stz.db'));
+        Reflect.set(global.config, 'mediaDir', join(dataDir, 'media'));
+        Reflect.set(global.config, 'uploadDir', join(dataDir, 'uploads'));
     },
 };
