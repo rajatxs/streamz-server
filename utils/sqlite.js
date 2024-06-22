@@ -156,20 +156,35 @@ export function runStatement(query, params = []) {
 
 async function prescript() {
     const queries = {
-        CREATE_TABLE_MEDIA: `
-            CREATE TABLE IF NOT EXISTS \`media\`(
+        CREATE_TABLE_USERS: `
+            CREATE TABLE IF NOT EXISTS \`users\` (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title VARCHAR(100) DEFAULT "New video",
+                uname VARCHAR(12) NOT NULL UNIQUE,
+                name VARCHAR(60),
+                pswd_hash TEXT NOT NULL,
+                active BOOLEAN DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `,
+        CREATE_TABLE_POSTS: `
+            CREATE TABLE IF NOT EXISTS \`posts\` (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title VARCHAR(100) DEFAULT "New post",
                 desc TEXT,
                 state VARCHAR(12) DEFAULT "created",
                 public BOOLEAN DEFAULT 1,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                user_id INTEGER REFERENCES users(id),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `,
-        CREATE_VIEW_MEDIA: `
-            CREATE VIEW IF NOT EXISTS \`media_public_view\` AS 
-            SELECT id, title, desc, state, public, STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at 
-            FROM media WHERE public=1 ORDER BY id DESC;
+        CREATE_VIEW_POSTS: `
+            CREATE VIEW IF NOT EXISTS \`posts_public_view\` AS 
+            SELECT id, title, desc, state, public, user_id,
+            STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at, 
+            STRFTIME('%Y-%m-%dT%H:%M:%SZ', updated_at) AS updated_at 
+            FROM posts WHERE public=1 ORDER BY id DESC;
         `,
     };
 
@@ -201,9 +216,10 @@ export function sqlite() {
 }
 
 /**
+ * @param {boolean} setup - Run prescript
  * @returns {Promise<void>}
  */
-export function openSQLiteDatabase() {
+export function openSQLiteDatabase(setup = true) {
     return new Promise(function (resolve, reject) {
         if (instance) {
             return resolve();
@@ -225,10 +241,12 @@ export function openSQLiteDatabase() {
                     message: `Opened ${dbFile}`,
                 });
 
-                try {
-                    await prescript();
-                } catch (error) {
-                    return reject(error);
+                if (setup) {
+                    try {
+                        await prescript();
+                    } catch (error) {
+                        return reject(error);
+                    }
                 }
 
                 resolve();
@@ -250,6 +268,7 @@ export function closeSQLiteDatabase() {
                         label: 'sqlite',
                         message: err.message,
                     });
+                    console.log('e', err);
                     reject(err);
                 } else {
                     logger.log({
