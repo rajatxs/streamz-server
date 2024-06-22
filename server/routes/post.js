@@ -1,20 +1,20 @@
 import {
-    handleMediaGetList_v1,
-    handleMediaGet_v1,
-    handleMediaCreate_v1,
-    handleMediaUpload_v1,
-    handleMediaDelete_v1,
-} from '../handlers/media.js';
+    handlePostGetList_v1,
+    handlePostGet_v1,
+    handlePostCreate_v1,
+    handlePostUpload_v1,
+    handlePostDelete_v1,
+} from '../handlers/post.js';
 
 /**
- * Register all media related API routes
+ * Register all post related API routes
  * @version 1
  * @type {import('fastify').FastifyPluginCallback}
  * @returns {void}
  */
-export function mediaApiRoutes_v1(instance, options, done) {
-    instance.get('/', handleMediaGetList_v1);
-    instance.get('/:id', handleMediaGet_v1);
+export function postApiRoutes_v1(instance, options, done) {
+    instance.get('/', handlePostGetList_v1);
+    instance.get('/:id', handlePostGet_v1);
     instance.post(
         '/',
         {
@@ -42,9 +42,9 @@ export function mediaApiRoutes_v1(instance, options, done) {
                 },
             },
         },
-        handleMediaCreate_v1,
+        handlePostCreate_v1,
     );
-    instance.post('/:mid/upload', handleMediaUpload_v1);
-    instance.delete('/:mid', handleMediaDelete_v1);
+    instance.post('/:mid/upload', handlePostUpload_v1);
+    instance.delete('/:mid', handlePostDelete_v1);
     done();
 }

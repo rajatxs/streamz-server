@@ -1,6 +1,6 @@
 import logger from '../../utils/logger.js';
 import { handlePing } from '../handlers/handlers.js';
-import { mediaApiRoutes_v1 } from './media.js';
+import { postApiRoutes_v1 } from './post.js';
 
 /**
  * Register all API related routes
@@ -25,7 +25,7 @@ export function apiRoutes(instance, options, done) {
         handlePing,
     );
 
-    instance.register(mediaApiRoutes_v1, { prefix: '/v1/media' });
+    instance.register(postApiRoutes_v1, { prefix: '/v1/post' });
 
     logger.log({
         level: 'info',

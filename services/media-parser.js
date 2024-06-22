@@ -4,7 +4,7 @@ import { unlink, rename } from 'fs/promises';
 import { fork } from 'child_process';
 import config from '../config.js';
 import logger from '../utils/logger.js';
-import { updateMediaState } from './media.js';
+import { updatePostState } from './posts.js';
 
 /**
  * @typedef MediaObject
@@ -86,7 +86,7 @@ function parse(param) {
                 message: `Parsing done for media ${param.id}`,
             });
 
-            await updateMediaState(param.id, 'done');
+            await updatePostState(param.id, 'done');
 
             // Remove resolved source file
             await unlink(sourceFile);
@@ -97,7 +97,7 @@ function parse(param) {
                 message: `Failed to parse media ${param.id}`,
             });
 
-            await updateMediaState(param.id, 'parse_error');
+            await updatePostState(param.id, 'parse_error');
 
             // Keep unresolved source file by different filename prefix
             await rename(sourceFile, join(config.uploadDir, `_${param.filename}`));
@@ -122,7 +122,7 @@ function parse(param) {
 
         if (message === 'preset:done') {
             proc.send('parse');
-            await updateMediaState(param.id, 'parsing');
+            await updatePostState(param.id, 'parsing');
         } else if (message === 'parse:done') {
             proc.send('done');
         }

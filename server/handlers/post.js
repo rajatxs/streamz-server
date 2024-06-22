@@ -6,13 +6,13 @@ import { pipeline } from 'stream';
 import logger from '../../utils/logger.js';
 import config from '../../config.js';
 import {
-    getMedia,
-    getMediaList,
-    createMediaFile,
-    mediaExists,
-    updateMediaState,
-    deleteMedia,
-} from '../../services/media.js';
+    getPost,
+    getPostCollection,
+    createPost,
+    isPostExists,
+    updatePostState,
+    deletePost,
+} from '../../services/posts.js';
 
 const pump = util.promisify(pipeline);
 
@@ -20,16 +20,16 @@ const pump = util.promisify(pipeline);
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
-export async function handleMediaGetList_v1(request, reply) {
+export async function handlePostGetList_v1(request, reply) {
     const limit = request.query.limit || 16;
     const state = request.query.state || 'done';
     let list;
 
     try {
-        list = await getMediaList({ state, limit });
+        list = await getPostCollection({ state, limit });
     } catch (error) {
         return reply.status(500).send({
-            message: 'Failed to get media list',
+            message: 'Failed to get posts',
         });
     }
 
@@ -43,29 +43,29 @@ export async function handleMediaGetList_v1(request, reply) {
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
-export async function handleMediaGet_v1(request, reply) {
-    const mediaId = Number(request.params.id);
+export async function handlePostGet_v1(request, reply) {
+    const postId = Number(request.params.id);
 
-    /** @type {import('../../models/MediaFile.js').MediaFile} */
-    let media;
+    /** @type {import('../../models/Post.js').Post} */
+    let post;
 
     try {
-        media = await getMedia(mediaId);
+        post = await getPost(postId);
     } catch (error) {
         return reply.status(500).send({
-            message: 'Failed to get media',
+            message: 'Failed to get post',
         });
     }
 
-    if (!media) {
+    if (!post) {
         return reply.status(404).send({
-            message: 'Media not found',
+            message: 'Post not found',
         });
     }
 
     return reply.status(200).send({
         message: 'Ok',
-        result: media,
+        result: post,
     });
 }
 
@@ -73,15 +73,16 @@ export async function handleMediaGet_v1(request, reply) {
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
-export async function handleMediaCreate_v1(request, reply) {
+export async function handlePostCreate_v1(request, reply) {
     /** @type {number} */
     let insertId;
 
     try {
-        insertId = await createMediaFile({
+        insertId = await createPost({
             title: request.body.title,
             description: request.body.description,
             public: request.body.public,
+            userId: 1,
         });
     } catch (error) {
         return reply.status(500).send({
@@ -101,8 +102,9 @@ export async function handleMediaCreate_v1(request, reply) {
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
-export async function handleMediaUpload_v1(request, reply) {
-    const mediaId = Number(request.params.mid);
+export async function handlePostUpload_v1(request, reply) {
+    // @ts-ignore
+    const postId = Number(request.params.mid);
     const data = await request.file();
 
     // Allow only mp4 file format
@@ -112,25 +114,25 @@ export async function handleMediaUpload_v1(request, reply) {
         });
     }
 
-    // Check media registry
-    if ((await mediaExists(mediaId)) === false) {
+    // Check post registry
+    if ((await isPostExists(postId)) === false) {
         return reply.status(404).send({
-            message: 'Media not found',
+            message: 'Post not found',
         });
     }
 
-    const tempFilePath = join(config.uploadDir, `_${mediaId.toString()}.mp4`);
-    const filePath = join(config.uploadDir, `${mediaId.toString()}.mp4`);
+    const tempFilePath = join(config.uploadDir, `_${postId.toString()}.mp4`);
+    const filePath = join(config.uploadDir, `${postId.toString()}.mp4`);
 
     // Write video stream
     await pump(data.file, createWriteStream(tempFilePath));
-    await updateMediaState(mediaId, 'saved');
+    await updatePostState(postId, 'saved');
     await rename(tempFilePath, filePath);
 
     reply.status(200).send({
         message: 'File saved',
         result: {
-            id: mediaId,
+            id: postId,
         },
     });
 }
@@ -139,25 +141,26 @@ export async function handleMediaUpload_v1(request, reply) {
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
-export async function handleMediaDelete_v1(request, reply) {
-    const mediaId = Number(request.params.mid);
-    const mediaDir = join(config.mediaDir, mediaId.toString());
+export async function handlePostDelete_v1(request, reply) {
+    // @ts-ignore
+    const postId = Number(request.params.mid);
+    const mediaDir = join(config.mediaDir, postId.toString());
 
     try {
-        await deleteMedia(mediaId);
+        await deletePost(postId);
         await rm(mediaDir, { recursive: true, force: true });
     } catch (error) {
         logger.log({
             level: 'error',
-            label: 'handler:media:handleMediaDelete_v1',
+            label: 'handler:post:handlePostDelete_v1',
             message: error.message,
         });
     }
 
-    reply.status(200).send({
-        message: 'Media deleted',
+    return reply.status(200).send({
+        message: 'Post deleted',
         result: {
-            id: mediaId,
+            id: postId,
         },
     });
 }
