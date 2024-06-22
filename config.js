@@ -1,4 +1,5 @@
 import { join, isAbsolute } from 'path';
+import { homedir } from 'os';
 
 /**
  * @typedef ConfigPresetOptions
@@ -6,6 +7,14 @@ import { join, isAbsolute } from 'path';
  */
 
 export default {
+    /**
+     * Default data root directory path
+     * @type {string}
+     */
+    get DEFAULT_DATA_DIR() {
+        return join(homedir(), '.stzdata');
+    },
+
     /**
      * Data root directory path
      * @type {string}
