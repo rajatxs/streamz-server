@@ -179,6 +179,13 @@ async function prescript() {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `,
+        CREATE_VIEW_USERS: `
+            CREATE VIEW IF NOT EXISTS \`users_active_view\` AS 
+            SELECT id, uname, name, pswd_hash, active,
+            STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at, 
+            STRFTIME('%Y-%m-%dT%H:%M:%SZ', updated_at) AS updated_at 
+            FROM users WHERE active=1 ORDER BY id DESC;
+        `,
         CREATE_VIEW_POSTS: `
             CREATE VIEW IF NOT EXISTS \`posts_public_view\` AS 
             SELECT id, title, desc, state, public, user_id,
