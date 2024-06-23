@@ -1,5 +1,5 @@
 import logger from '../../utils/logger.js';
-import { handlePing } from '../handlers/handlers.js';
+import { handlePing, handleVerification } from '../handlers/handlers.js';
 import { postApiRoutes_v1 } from './post.js';
 
 /**
@@ -24,6 +24,13 @@ export function apiRoutes(instance, options, done) {
         },
         handlePing,
     );
+
+    instance.route({
+        method: 'GET',
+        url: '/verify',
+        onRequest: instance.basicAuth,
+        handler: handleVerification,
+    });
 
     instance.register(postApiRoutes_v1, { prefix: '/v1/post' });
 
