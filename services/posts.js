@@ -54,6 +54,16 @@ export async function isPostExists(id) {
 }
 
 /**
+ * @param {number} id 
+ * @param {number} userId 
+ * @returns {Promise<boolean>}
+ */
+export async function checkPostOwnership(id, userId) {
+    const row = await getRow('SELECT COUNT(id) as count FROM posts WHERE id=? AND user_id=?;', [id, userId]);
+    return row.count > 0;
+}
+
+/**
  * @param {number} id
  * @param {string} status
  * @returns {Promise<number>}
