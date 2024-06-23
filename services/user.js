@@ -1,5 +1,33 @@
-import { User } from '../models/User.js';
+import { User, UserPublicInfo, UserCredential } from '../models/User.js';
 import { getRow, insertRow } from '../utils/sqlite.js';
+
+/**
+ * @param {number} id
+ * @returns {Promise<UserPublicInfo|null>}
+ */
+export function getUserInfo(id) {
+    const row = getRow('SELECT id, uname, name FROM users_active_view WHERE id=?;', [id]);
+
+    if (!row) {
+        return null;
+    }
+    return UserPublicInfo.fromRow(row);
+}
+
+/**
+ * @param {string} username
+ * @returns {Promise<UserCredential|null>}
+ */
+export async function getUserCredentialByUsername(username) {
+    const row = await getRow('SELECT id, uname, pswd_hash FROM users_active_view WHERE uname=?;', [
+        username,
+    ]);
+
+    if (!row) {
+        return null;
+    }
+    return UserCredential.fromRow(row);
+}
 
 /**
  * Insert new user record in "users" table
@@ -20,6 +48,8 @@ export function createUser(data) {
  * @returns {Promise<boolean>}
  */
 export async function isUsernameExists(username) {
-    const row = await getRow('SELECT COUNT(id) as count FROM users WHERE uname=?;', [username]);
+    const row = await getRow('SELECT COUNT(id) as count FROM users_active_view WHERE uname=?;', [
+        username,
+    ]);
     return row.count > 0;
 }
