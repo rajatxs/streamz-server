@@ -13,38 +13,62 @@ import {
  * @returns {void}
  */
 export function postApiRoutes_v1(instance, options, done) {
-    instance.get('/', handlePostGetList_v1);
-    instance.get('/:id', handlePostGet_v1);
-    instance.post(
-        '/',
-        {
-            schema: {
-                body: {
-                    type: 'object',
-                    required: ['title'],
-                    additionalProperties: false,
-                    properties: {
-                        title: {
-                            type: 'string',
-                            minLength: 5,
-                            maxLength: 100,
-                        },
-                        description: {
-                            type: 'string',
-                            default: '',
-                            maxLength: 5000,
-                        },
-                        public: {
-                            type: 'boolean',
-                            default: true,
-                        },
+    instance.route({
+        method: 'GET',
+        url: '/',
+        onRequest: instance.basicAuth,
+        handler: handlePostGetList_v1,
+    });
+
+    instance.route({
+        method: 'GET',
+        url: '/:id',
+        onRequest: instance.basicAuth,
+        handler: handlePostGet_v1,
+    });
+
+    instance.route({
+        method: 'POST',
+        url: '/',
+        schema: {
+            body: {
+                type: 'object',
+                required: ['title'],
+                additionalProperties: false,
+                properties: {
+                    title: {
+                        type: 'string',
+                        minLength: 5,
+                        maxLength: 100,
+                    },
+                    description: {
+                        type: 'string',
+                        default: '',
+                        maxLength: 5000,
+                    },
+                    public: {
+                        type: 'boolean',
+                        default: true,
                     },
                 },
             },
         },
-        handlePostCreate_v1,
-    );
-    instance.post('/:mid/upload', handlePostUpload_v1);
-    instance.delete('/:mid', handlePostDelete_v1);
+        onRequest: instance.basicAuth,
+        handler: handlePostCreate_v1,
+    });
+
+    instance.route({
+        method: 'POST',
+        url: '/:mid/upload',
+        onRequest: instance.basicAuth,
+        handler: handlePostUpload_v1,
+    });
+
+    instance.route({
+        method: 'DELETE',
+        url: '/:mid',
+        onRequest: instance.basicAuth,
+        handler: handlePostDelete_v1,
+    });
     done();
 }
