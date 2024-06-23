@@ -2,8 +2,10 @@ import Fastify from 'fastify';
 import FastifyMultipart from '@fastify/multipart';
 import FastifyStatic from '@fastify/static';
 import FastifyCORS from '@fastify/cors';
+import FastifyBasicAuth from '@fastify/basic-auth';
 import config from '../config.js';
 import logger from '../utils/logger.js';
+import { requestValidator } from './handlers/auth.js';
 import { apiRoutes } from './routes/routes.js';
 
 /** @type {import('fastify').FastifyInstance} */
@@ -44,7 +46,6 @@ export async function startServerInstance(options) {
         ],
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'HEAD', 'OPTIONS', 'DELETE'],
     });
-
     instance.register(FastifyMultipart, {
         attachFieldsToBody: false,
         limits: {
@@ -52,20 +53,14 @@ export async function startServerInstance(options) {
             fileSize: 1e9,
         },
     });
-
     instance.register(FastifyStatic, {
         root: config.mediaDir,
         prefix: '/media/files',
     });
-
-    instance.register(apiRoutes, { prefix: '/api' });
-
-    /**
-    instance.addHook('onRequest', function (request, reply, done) {
-        console.log('new req', request.method, request.routeOptions.url);
-        done();
+    instance.register(FastifyBasicAuth, {
+        validate: requestValidator,
     });
-    */
+    instance.register(apiRoutes, { prefix: '/api' });
 
     url = await instance.listen({
         host: options.host,
