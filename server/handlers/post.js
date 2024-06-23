@@ -9,7 +9,7 @@ import {
     getPost,
     getPostCollection,
     createPost,
-    isPostExists,
+    checkPostOwnership,
     updatePostState,
     deletePost,
 } from '../../services/posts.js';
@@ -74,6 +74,8 @@ export async function handlePostGet_v1(request, reply) {
  * @version 1
  */
 export async function handlePostCreate_v1(request, reply) {
+    const userId = Number(Reflect.get(request, 'userId'));
+
     /** @type {number} */
     let insertId;
 
@@ -82,7 +84,7 @@ export async function handlePostCreate_v1(request, reply) {
             title: request.body.title,
             description: request.body.description,
             public: request.body.public,
-            userId: 1,
+            userId,
         });
     } catch (error) {
         return reply.status(500).send({
@@ -103,6 +105,8 @@ export async function handlePostCreate_v1(request, reply) {
  * @version 1
  */
 export async function handlePostUpload_v1(request, reply) {
+    const userId = Number(Reflect.get(request, 'userId'));
+
     // @ts-ignore
     const postId = Number(request.params.mid);
     const data = await request.file();
@@ -115,7 +119,7 @@ export async function handlePostUpload_v1(request, reply) {
     }
 
     // Check post registry
-    if ((await isPostExists(postId)) === false) {
+    if ((await checkPostOwnership(postId, userId)) === false) {
         return reply.status(404).send({
             message: 'Post not found',
         });
@@ -142,9 +146,17 @@ export async function handlePostUpload_v1(request, reply) {
  * @version 1
  */
 export async function handlePostDelete_v1(request, reply) {
+    const userId = Number(Reflect.get(request, 'userId'));
+
     // @ts-ignore
     const postId = Number(request.params.mid);
     const mediaDir = join(config.mediaDir, postId.toString());
+
+    if ((await checkPostOwnership(postId, userId)) === false) {
+        return reply.status(404).send({
+            message: 'Post not found',
+        });
+    }
 
     try {
         await deletePost(postId);
