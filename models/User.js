@@ -21,7 +21,7 @@ export class User {
     updatedAt = new Date();
 
     /**
-     * Parse User from database row
+     * Parse `User` from database row
      * @param {object} row
      * @returns {User}
      */
@@ -36,5 +36,55 @@ export class User {
         user.createdAt = new Date(row.created_at);
         user.updatedAt = new Date(row.updated_at);
         return user;
+    }
+}
+
+export class UserPublicInfo {
+    /** @type {number} */
+    id = NaN;
+
+    /** @type {string} */
+    username = '';
+
+    /** @type {string} */
+    name = '';
+
+    /**
+     * Parse `UserPublicInfo` from database row
+     * @param {object} row
+     * @returns {UserPublicInfo}
+     */
+    static fromRow(row) {
+        const info = new UserPublicInfo();
+
+        info.id = row.id;
+        info.username = row.uname;
+        info.name = row.name;
+        return info;
+    }
+}
+
+export class UserCredential {
+    /** @type {number} */
+    id = NaN;
+
+    /** @type {string} */
+    username = '';
+
+    /** @type {string} */
+    passwordHash = '';
+
+    /**
+     * Parse `UserCredential` from database row
+     * @param {object} row
+     * @returns {UserCredential}
+     */
+    static fromRow(row) {
+        const cred = new UserCredential();
+
+        cred.id = row.id;
+        cred.username = row.uname;
+        cred.passwordHash = row.pswd_hash;
+        return cred;
     }
 }
