@@ -13,7 +13,8 @@
     "markdown": "github",
     "scripts": {
         "start": "node cmd/streamz.js start",
-        "dev:start": "nodemon cmd/streamz.js start -r appdata"
+        "dev:start": "nodemon cmd/streamz.js start -r appdata",
+        "dev:create-admin": "node cmd/streamz.js create-user -r appdata Admin Test@987"
     },
     "keywords": [
         "streamz",
@@ -25,6 +26,7 @@
         "url": "https://github.com/rajatxs"
     },
     "dependencies": {
+        "@fastify/basic-auth": "^5.1.1",
         "@fastify/cors": "^9.0.1",
         "@fastify/multipart": "^8.2.0",
         "@fastify/static": "^7.0.4",
