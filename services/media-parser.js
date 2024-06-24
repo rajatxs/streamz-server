@@ -68,7 +68,10 @@ export function stopMediaParserService() {
 function parse(param) {
     const sourceFile = join(config.uploadDir, param.filename);
     const mediaBucket = join(config.mediaDir, param.id.toString());
-    const proc = fork('workers/media-parser', [sourceFile, mediaBucket]);
+    const proc = fork(join(import.meta.dirname, '..', 'workers', 'media-parser.js'), [
+        sourceFile,
+        mediaBucket,
+    ]);
 
     proc.on('error', async function (error) {
         logger.log({
