@@ -16,6 +16,14 @@ export default {
     },
 
     /**
+     * Web directory path
+     * @type {string} 
+     */
+    get webDir() {
+        return join(import.meta.dirname, 'web');
+    },
+
+    /**
      * Data root directory path
      * @type {string}
      */
