@@ -54,8 +54,13 @@ export async function startServerInstance(options) {
         },
     });
     instance.register(FastifyStatic, {
+        root: config.webDir,
+        prefix: '/',
+    });
+    instance.register(FastifyStatic, {
         root: config.mediaDir,
         prefix: '/media/files',
+        decorateReply: false,
     });
     instance.register(FastifyBasicAuth, {
         validate: requestValidator,
