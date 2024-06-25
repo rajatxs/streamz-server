@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { mkdir, writeFile, appendFile } from 'fs/promises';
-import { execSync } from 'child_process';
+import { execSync, exec } from 'child_process';
 
 /**
  * @typedef MediaScale
@@ -52,13 +52,12 @@ process.on('message', async function (message) {
             break;
         }
         case 'parse': {
-            generateThumbnail();
+            /** @type {Promise[]} */
+            let promises;
 
-            for (let scale of mediaScales) {
-                process.send(`converting:${scale.name}`);
-                await convertVideo(scale);
-                process.send(`converted:${scale.name}`);
-            }
+            generateThumbnail();
+            promises = mediaScales.map(parseVideoResolution);
+            await Promise.all(promises);
             process.send('parse:done');
             break;
         }
@@ -96,20 +95,32 @@ async function preset() {
 /**
  * Function to convert video to a specific resolution and bitrate
  * @param {MediaScale} options
+ * @returns {Promise<void>}
  */
-async function convertVideo(options) {
-    const playlistFile = join(options.path, 'playlist.m3u8');
-    const cmd = `ffmpeg -i "${sourceFile}" -vf "scale=-2:${options.resolution}" -c:v libx264 -b:v ${options.bitrate}k -c:a aac -b:a 128k -preset veryfast -crf 20 -g 48 -keyint_min 48 -sc_threshold 0 -hls_time 4 -hls_playlist_type vod -hls_segment_filename "${options.path}/seg_%03d.ts" "${playlistFile}"`;
+async function parseVideoResolution(options) {
+    return new Promise(function(resolve, reject) {
+        process.send(`converting:${options.name}`);
+        const playlistFile = join(options.path, 'playlist.m3u8');
+        const cmd = `ffmpeg -i "${sourceFile}" -vf "scale=-2:${options.resolution}" -c:v libx264 -b:v ${options.bitrate}k -c:a aac -b:a 128k -preset veryfast -crf 20 -g 48 -keyint_min 48 -sc_threshold 0 -hls_time 4 -hls_playlist_type vod -hls_segment_filename "${options.path}/seg_%03d.ts" "${playlistFile}"`;
 
-    // Create video segments and resolution playlist
-    execSync(cmd);
+        // Create video segments and resolution playlist
+        const proc = exec(cmd);
 
-    // Add resolution to master playlist
-    await appendFile(
-        masterPlaylist,
-        `#EXT-X-STREAM-INF:BANDWIDTH=${options.bitrate * 1000},RESOLUTION=${options.resolution}p\n`,
-    );
-    await appendFile(masterPlaylist, `${options.resolution}p/playlist.m3u8\n`);
+        proc.on('error', function(error) {
+            reject(error);
+        });
+
+        proc.on('exit', async function(code) {
+            // Add resolution to master playlist
+            await appendFile(
+                masterPlaylist,
+                `#EXT-X-STREAM-INF:BANDWIDTH=${options.bitrate * 1000},RESOLUTION=${options.resolution}p\n`,
+            );
+            await appendFile(masterPlaylist, `${options.resolution}p/playlist.m3u8\n`);
+            process.send(`converted:${options.name}`);
+            resolve();
+        });
+    })
 }
 
 /**
