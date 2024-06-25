@@ -1,0 +1,11 @@
+temp
+appdata
+.stzdata
+.vscode
+.cache
+
+.DS_Store
+.prettierrc
+.env
+*.log
+*.zip
