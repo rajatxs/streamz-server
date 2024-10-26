@@ -152,7 +152,7 @@ export async function handlePostDelete_v1(request, reply) {
 
     // @ts-ignore
     const postId = Number(request.params.mid);
-    const mediaPath = join(config.mediaDir, postId.toString());
+    const mediaPath = join(config.mediaDir, `${postId}.mp4`);
 
     if ((await checkPostOwnership(postId, userId)) === false) {
         return reply.status(404).send({
