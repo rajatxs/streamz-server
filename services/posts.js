@@ -32,14 +32,15 @@ export async function getPostCollection(options = {}) {
 }
 
 /**
- * @param {Pick<Post, 'title'|'description'|'public'|'userId'} data
+ * @param {Pick<Post, 'title'|'description'|'public'|'url'|'userId'} data
  * @returns {Promise<number>}
  */
 export function createPost(data) {
-    return insertRow('INSERT INTO posts(title, desc, public, user_id) VALUES (?, ?, ?, ?);', [
+    return insertRow('INSERT INTO posts(title, desc, public, url, user_id) VALUES (?, ?, ?, ?, ?);', [
         data.title,
         data.description,
         data.public,
+        data.url,
         data.userId,
     ]);
 }
