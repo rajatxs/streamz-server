@@ -84,6 +84,7 @@ export async function handlePostCreate_v1(request, reply) {
             title: request.body.title,
             description: request.body.description,
             public: request.body.public,
+            url: request.body.url || '',
             userId,
         });
     } catch (error) {
@@ -125,13 +126,14 @@ export async function handlePostUpload_v1(request, reply) {
         });
     }
 
-    const tempFilePath = join(config.uploadDir, `_${postId.toString()}.mp4`);
-    const filePath = join(config.uploadDir, `${postId.toString()}.mp4`);
+    const tempFilePath = join(config.uploadDir, `${postId.toString()}.mp4`);
+    const filePath = join(config.mediaDir, `${postId.toString()}.mp4`);
 
     // Write video stream
+    await updatePostState(postId, 'saving');
     await pump(data.file, createWriteStream(tempFilePath));
-    await updatePostState(postId, 'saved');
     await rename(tempFilePath, filePath);
+    await updatePostState(postId, 'done');
 
     reply.status(200).send({
         message: 'File saved',
@@ -150,7 +152,7 @@ export async function handlePostDelete_v1(request, reply) {
 
     // @ts-ignore
     const postId = Number(request.params.mid);
-    const mediaDir = join(config.mediaDir, postId.toString());
+    const mediaPath = join(config.mediaDir, postId.toString());
 
     if ((await checkPostOwnership(postId, userId)) === false) {
         return reply.status(404).send({
@@ -160,7 +162,7 @@ export async function handlePostDelete_v1(request, reply) {
 
     try {
         await deletePost(postId);
-        await rm(mediaDir, { recursive: true, force: true });
+        await rm(mediaPath, { force: false });
     } catch (error) {
         logger.log({
             level: 'error',
