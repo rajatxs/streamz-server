@@ -14,6 +14,9 @@ export class Post {
     /** @type {boolean} */
     public = true;
 
+    /** @type {string} */
+    url = '';
+
     /** @type {number} */
     userId = NaN;
 
@@ -36,6 +39,7 @@ export class Post {
         mf.description = row.desc;
         mf.state = row.state;
         mf.public = Boolean(row.public);
+        mf.url = row.url;
         mf.userId = row.user_id;
         mf.createdAt = new Date(row.created_at);
         mf.updatedAt = new Date(row.updated_at);
