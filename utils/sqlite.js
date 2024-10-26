@@ -174,6 +174,7 @@ async function prescript() {
                 desc TEXT,
                 state VARCHAR(12) DEFAULT "created",
                 public BOOLEAN DEFAULT 1,
+                url TEXT,
                 user_id INTEGER REFERENCES users(id),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -188,7 +189,7 @@ async function prescript() {
         `,
         CREATE_VIEW_POSTS: `
             CREATE VIEW IF NOT EXISTS \`posts_public_view\` AS 
-            SELECT id, title, desc, state, public, user_id,
+            SELECT id, title, desc, state, public, url, user_id,
             STRFTIME('%Y-%m-%dT%H:%M:%SZ', created_at) AS created_at, 
             STRFTIME('%Y-%m-%dT%H:%M:%SZ', updated_at) AS updated_at 
             FROM posts WHERE public=1 ORDER BY id DESC;
