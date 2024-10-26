@@ -50,6 +50,12 @@ export function postApiRoutes_v1(instance, options, done) {
                         type: 'boolean',
                         default: true,
                     },
+                    url: {
+                        type: 'string',
+                        format: 'url',
+                        nullable: true,
+                        maxLength: 2048,
+                    },
                 },
             },
         },
