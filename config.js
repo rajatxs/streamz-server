@@ -48,6 +48,14 @@ export default {
     },
 
     /**
+     * Media thumb directory path
+     * @type {string}
+     */
+    get thumbDir() {
+        return Reflect.get(global.config, 'thumbDir');
+    },
+
+    /**
      * Media uploads directory path
      * @type {string}
      */
@@ -76,6 +84,7 @@ export default {
         Reflect.set(global.config, 'dataDir', dataDir);
         Reflect.set(global.config, 'databaseFile', join(dataDir, 'stz.db'));
         Reflect.set(global.config, 'mediaDir', join(dataDir, 'media'));
+        Reflect.set(global.config, 'thumbDir', join(dataDir, 'thumbs'));
         Reflect.set(global.config, 'uploadDir', join(dataDir, 'uploads'));
     },
 };

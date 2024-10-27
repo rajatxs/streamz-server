@@ -40,6 +40,11 @@ startCommand.action(async function (options) {
         logger.info(`Created media directory at ${config.mediaDir}`);
     }
 
+    if (!existsSync(config.thumbDir)) {
+        await mkdir(config.thumbDir);
+        logger.info(`Created thumb directory at ${config.thumbDir}`);
+    }
+
     if (!existsSync(config.uploadDir)) {
         await mkdir(config.uploadDir);
         logger.info(`Created uploads directory at ${config.uploadDir}`);
