@@ -62,6 +62,11 @@ export async function startServerInstance(options) {
         prefix: '/media/files',
         decorateReply: false,
     });
+    instance.register(FastifyStatic, {
+        root: config.thumbDir,
+        prefix: '/media/thumbs',
+        decorateReply: false,
+    });
     instance.register(FastifyBasicAuth, {
         validate: requestValidator,
     });
