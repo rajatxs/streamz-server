@@ -3,6 +3,7 @@ import {
     handlePostGet_v1,
     handlePostCreate_v1,
     handlePostUpload_v1,
+    handlePostThumbUpload_v1,
     handlePostDelete_v1,
 } from '../handlers/post.js';
 
@@ -68,6 +69,13 @@ export function postApiRoutes_v1(instance, options, done) {
         url: '/:mid/upload',
         onRequest: instance.basicAuth,
         handler: handlePostUpload_v1,
+    });
+
+    instance.route({
+        method: 'POST',
+        url: '/:mid/thumb',
+        onRequest: instance.basicAuth,
+        handler: handlePostThumbUpload_v1,
     });
 
     instance.route({

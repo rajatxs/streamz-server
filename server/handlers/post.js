@@ -147,6 +147,37 @@ export async function handlePostUpload_v1(request, reply) {
  * @type {import('fastify').RouteHandler}
  * @version 1
  */
+export async function handlePostThumbUpload_v1(request, reply) {
+    const userId = Number(Reflect.get(request, 'userId'));
+    const postId = Number(request.params.mid);
+    const data = await request.file();
+
+    // Allow only jpeg file format
+    if (data.mimetype !== 'image/jpeg') {
+        return reply.status(400).send({
+            message: 'Invalid file format',
+        });
+    }
+    
+    // Check post registry
+    if ((await checkPostOwnership(postId, userId)) === false) {
+        return reply.status(404).send({
+            message: 'Post not found',
+        });
+    }
+
+    const filePath = join(config.thumbDir, `${postId.toString()}.jpeg`);
+    await pump(data.file, createWriteStream(filePath));
+
+    reply.status(200).send({
+        message: "File saved",
+    });
+}
+
+/**
+ * @type {import('fastify').RouteHandler}
+ * @version 1
+ */
 export async function handlePostDelete_v1(request, reply) {
     const userId = Number(Reflect.get(request, 'userId'));
 
