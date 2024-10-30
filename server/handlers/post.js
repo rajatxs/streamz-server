@@ -1,5 +1,6 @@
 import util from 'util';
 import { join } from 'path';
+import { Post } from '../../models/Post.js';
 import { createWriteStream } from 'fs';
 import { rename, rm } from 'fs/promises';
 import { pipeline } from 'stream';
@@ -8,6 +9,7 @@ import config from '../../config.js';
 import {
     getPost,
     getPostCollection,
+    getPostCollectionByQuery,
     createPost,
     checkPostOwnership,
     updatePostState,
@@ -21,13 +23,40 @@ const pump = util.promisify(pipeline);
  * @version 1
  */
 export async function handlePostGetList_v1(request, reply) {
-    const limit = request.query.limit || 16;
+    /** @type {number} */
+    const limit = request.requestContext.get('pageLimit');
+
+    /** @type {number} */
+    const offset = request.requestContext.get('pageOffset');
+
+    /** @type {string} */
     const state = request.query.state || 'done';
+
+    /** @type {string} */
+    const query = request.query.q || '';
+
+    /** @type {Array<Post>} */
     let list;
 
     try {
-        list = await getPostCollection({ state, limit });
+        const options = {
+            state,
+            limit,
+            offset,
+        };
+
+        if (typeof query === 'string' && query.length > 0) {
+            list = await getPostCollectionByQuery(query, options);
+        } else {
+            list = await getPostCollection(options);
+        }
     } catch (error) {
+        logger.log({
+            level: 'error',
+            label: 'handler:get:handlePostGetList_v1',
+            message: error.message,
+        });
+
         return reply.status(500).send({
             message: 'Failed to get posts',
         });
@@ -158,7 +187,7 @@ export async function handlePostThumbUpload_v1(request, reply) {
             message: 'Invalid file format',
         });
     }
-    
+
     // Check post registry
     if ((await checkPostOwnership(postId, userId)) === false) {
         return reply.status(404).send({
@@ -170,7 +199,7 @@ export async function handlePostThumbUpload_v1(request, reply) {
     await pump(data.file, createWriteStream(filePath));
 
     reply.status(200).send({
-        message: "File saved",
+        message: 'File saved',
     });
 }
 
