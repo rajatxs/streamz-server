@@ -3,6 +3,7 @@ import FastifyMultipart from '@fastify/multipart';
 import FastifyStatic from '@fastify/static';
 import FastifyCORS from '@fastify/cors';
 import FastifyBasicAuth from '@fastify/basic-auth';
+import FastifyRequestContext from '@fastify/request-context';
 import config from '../config.js';
 import logger from '../utils/logger.js';
 import { requestValidator } from './handlers/auth.js';
@@ -70,7 +71,24 @@ export async function startServerInstance(options) {
     instance.register(FastifyBasicAuth, {
         validate: requestValidator,
     });
+
+    instance.register(FastifyRequestContext, {
+        hook: 'preValidation',
+        defaultStoreValues: {},
+    });
+
     instance.register(apiRoutes, { prefix: '/api' });
+
+    instance.addHook('preHandler', function (request, reply, done) {
+        const page = Number(request.query.page) || 1;
+        const limit = Number(request.query.limit) || 25;
+        const offset = (page - 1) * limit;
+
+        request.requestContext.set('pageIndex', page);
+        request.requestContext.set('pageLimit', limit);
+        request.requestContext.set('pageOffset', offset);
+        done();
+    });
 
     url = await instance.listen({
         host: options.host,
