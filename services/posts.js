@@ -19,10 +19,29 @@ export async function getPost(id) {
  * @returns {Promise<Post[]>}
  */
 export async function getPostCollection(options = {}) {
-    const rows = await getRows('SELECT * FROM posts_public_view WHERE state=? LIMIT ?', [
+    const rows = await getRows('SELECT * FROM posts_public_view WHERE state=? LIMIT ? OFFSET ?;', [
         options.state,
         options.limit,
+        options.offset,
     ]);
+
+    if (Array.isArray(rows)) {
+        return rows.map((row) => Post.fromRow(row));
+    } else {
+        return [];
+    }
+}
+
+/**
+ * @param {string} query
+ * @param {Record<string, string|number|boolean>} [options]
+ * @returns {Promise<Post[]>}
+ */
+export async function getPostCollectionByQuery(query, options = {}) {
+    const rows = await getRows(
+        `SELECT * FROM posts_public_view WHERE title LIKE '%${query}%' OR desc LIKE '%${query}%' AND state=? LIMIT ? OFFSET ?;`,
+        [options.state, options.limit, options.offset],
+    );
 
     if (Array.isArray(rows)) {
         return rows.map((row) => Post.fromRow(row));
@@ -36,13 +55,10 @@ export async function getPostCollection(options = {}) {
  * @returns {Promise<number>}
  */
 export function createPost(data) {
-    return insertRow('INSERT INTO posts(title, desc, public, url, user_id) VALUES (?, ?, ?, ?, ?);', [
-        data.title,
-        data.description,
-        data.public,
-        data.url,
-        data.userId,
-    ]);
+    return insertRow(
+        'INSERT INTO posts(title, desc, public, url, user_id) VALUES (?, ?, ?, ?, ?);',
+        [data.title, data.description, data.public, data.url, data.userId],
+    );
 }
 
 /**
@@ -55,12 +71,15 @@ export async function isPostExists(id) {
 }
 
 /**
- * @param {number} id 
- * @param {number} userId 
+ * @param {number} id
+ * @param {number} userId
  * @returns {Promise<boolean>}
  */
 export async function checkPostOwnership(id, userId) {
-    const row = await getRow('SELECT COUNT(id) as count FROM posts WHERE id=? AND user_id=?;', [id, userId]);
+    const row = await getRow('SELECT COUNT(id) as count FROM posts WHERE id=? AND user_id=?;', [
+        id,
+        userId,
+    ]);
     return row.count > 0;
 }
 
