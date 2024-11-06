@@ -1,6 +1,7 @@
 import logger from '../../utils/logger.js';
 import { handlePing, handleVerification } from '../handlers/handlers.js';
 import { postApiRoutes_v1 } from './post.js';
+import { userApiRoutes_v1 } from './user.js';
 
 /**
  * Register all API related routes
@@ -33,6 +34,7 @@ export function apiRoutes(instance, options, done) {
     });
 
     instance.register(postApiRoutes_v1, { prefix: '/v1/post' });
+    instance.register(userApiRoutes_v1, { prefix: '/v1/user' });
 
     logger.log({
         level: 'info',
