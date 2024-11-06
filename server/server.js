@@ -87,6 +87,7 @@ export async function startServerInstance(options) {
         request.requestContext.set('pageIndex', page);
         request.requestContext.set('pageLimit', limit);
         request.requestContext.set('pageOffset', offset);
+        request.requestContext.set('userId', NaN);
         done();
     });
 

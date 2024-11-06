@@ -36,4 +36,5 @@ export async function requestValidator(username, password, request, reply) {
     }
 
     Reflect.set(request, 'userId', cred.id);
+    request.requestContext.set('userId', cred.id);
 }
