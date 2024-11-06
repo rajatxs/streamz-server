@@ -5,8 +5,8 @@ import { getRow, insertRow } from '../utils/sqlite.js';
  * @param {number} id
  * @returns {Promise<UserPublicInfo|null>}
  */
-export function getUserInfo(id) {
-    const row = getRow('SELECT id, uname, name FROM users_active_view WHERE id=?;', [id]);
+export async function getUserInfo(id) {
+    const row = await getRow('SELECT id, uname, name FROM users_active_view WHERE id=?;', [id]);
 
     if (!row) {
         return null;
