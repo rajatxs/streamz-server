@@ -7,7 +7,7 @@ const cmd = new Command('streamz');
 Reflect.set(global, 'config', {});
 
 (function () {
-    cmd.version('0.1.6', '-v, --version');
+    cmd.version('0.1.7', '-v, --version');
     cmd.description('Streamz media server');
     cmd.addCommand(startCommand);
     cmd.addCommand(createUserCommand);
