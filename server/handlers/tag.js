@@ -46,7 +46,7 @@ export async function handleGetTagList_v1(request, reply) {
     } catch (error) {
         logger.log({
             level: 'error',
-            label: 'handler:get:handleTagGetList_v1',
+            label: 'handler:get:handleGetTagList_v1',
             message: error.message,
         });
 
@@ -96,7 +96,7 @@ export async function handleCreateTag_v1(request, reply) {
         } else {
             logger.log({
                 level: 'error',
-                label: 'handler:post:handleTagCreate_v1',
+                label: 'handler:post:handleCreateTag_v1',
                 message: error.message,
             });
 
