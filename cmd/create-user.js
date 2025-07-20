@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { existsSync } from 'fs';
-import { genSalt, hash } from 'bcrypt';
+import { genSalt, hash } from 'bcryptjs';
 import config from '../config.js';
 import { createUser, isUsernameExists } from '../services/user.js';
 import { openSQLiteDatabase, closeSQLiteDatabase } from '../utils/sqlite.js';
