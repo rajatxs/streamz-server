@@ -1,9 +1,9 @@
-import SQLite3 from 'sqlite3';
+import SQLite3 from 'better-sqlite3';
 import logger from './logger.js';
 import config from '../config.js';
 
 /** @type {SQLite3.Database} */
-var instance;
+let instance; // Use let instead of var for better scoping
 
 /**
  * Reads single row from database collection
@@ -11,15 +11,7 @@ var instance;
  * @param {any[]} params
  */
 export function getRow(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        instance.get(query, params, function (err, row) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(row);
-            }
-        });
-    });
+    return instance.prepare(query).get(params);
 }
 
 /**
@@ -28,15 +20,7 @@ export function getRow(query, params = []) {
  * @param {any[]} params
  */
 export function getRows(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        instance.all(query, params, function (error, rows) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(rows);
-            }
-        });
-    });
+    return instance.prepare(query).all(params);
 }
 
 /**
@@ -45,26 +29,10 @@ export function getRows(query, params = []) {
  * @param {any[]} params
  * @returns {Promise<number>}
  */
-export function insertRow(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        const stmt = instance.prepare(query);
-
-        stmt.run(params, function (error1) {
-            if (error1) {
-                reject(error1);
-            } else {
-                const id = this.lastID;
-
-                stmt.finalize(function (error2) {
-                    if (error2) {
-                        reject(error2);
-                    } else {
-                        resolve(id);
-                    }
-                });
-            }
-        });
-    });
+export function insertRow(query, params) {
+    const stmt = instance.prepare(query);
+    const result = stmt.run(...params);
+    return result.lastInsertRowid;
 }
 
 /**
@@ -74,25 +42,9 @@ export function insertRow(query, params = []) {
  * @returns {Promise<number>}
  */
 export function updateRow(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        const stmt = instance.prepare(query);
-
-        stmt.run(params, function (error1) {
-            if (error1) {
-                reject(error1);
-            } else {
-                const changes = this.changes;
-
-                stmt.finalize(function (error2) {
-                    if (error2) {
-                        reject(error2);
-                    } else {
-                        resolve(changes);
-                    }
-                });
-            }
-        });
-    });
+    const stmt = instance.prepare(query);
+    const result = stmt.run(params);
+    return result.changes;
 }
 
 /**
@@ -102,25 +54,9 @@ export function updateRow(query, params = []) {
  * @returns {Promise<number>}
  */
 export function deleteRow(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        const stmt = instance.prepare(query);
-
-        stmt.run(params, function (error1) {
-            if (error1) {
-                reject(error1);
-            } else {
-                const changes = this.changes;
-
-                stmt.finalize(function (error2) {
-                    if (error2) {
-                        reject(error2);
-                    } else {
-                        resolve(changes);
-                    }
-                });
-            }
-        });
-    });
+    const stmt = instance.prepare(query);
+    const result = stmt.run(params);
+    return result.changes;
 }
 
 /**
@@ -130,31 +66,11 @@ export function deleteRow(query, params = []) {
  * @returns {Promise<void>}
  */
 export function runStatement(query, params = []) {
-    return new Promise(function (resolve, reject) {
-        const stmt = instance.prepare(query, function (prepareErr) {
-            if (prepareErr) {
-                return reject(prepareErr);
-            }
-
-            stmt.bind(...params);
-            stmt.run(function (runErr) {
-                if (runErr) {
-                    return reject(runErr);
-                }
-
-                stmt.finalize(function (finalizeErr) {
-                    if (finalizeErr) {
-                        return reject(finalizeErr);
-                    }
-
-                    resolve();
-                });
-            });
-        });
-    });
+    const stmt = instance.prepare(query);
+    stmt.run(params);
 }
 
-async function prescript() {
+function prescript() {
     const queries = {
         CREATE_TABLE_USERS: `
             CREATE TABLE IF NOT EXISTS \`users\` (
@@ -200,7 +116,7 @@ async function prescript() {
         const query = queries[queryName];
 
         try {
-            await runStatement(query);
+            instance.exec(query);
             logger.log({
                 level: 'info',
                 label: 'sqlite',
@@ -210,8 +126,9 @@ async function prescript() {
             logger.log({
                 level: 'error',
                 label: 'sqlite',
-                message: `Failed to execute query ${queryName}`,
+                message: `Failed to execute query ${queryName}: ${error.message}`,
             });
+            throw error;
         }
     }
 }
@@ -227,69 +144,54 @@ export function sqlite() {
  * @param {boolean} setup - Run prescript
  * @returns {Promise<void>}
  */
-export function openSQLiteDatabase(setup = true) {
-    return new Promise(function (resolve, reject) {
-        if (instance) {
-            return resolve();
-        }
+export async function openSQLiteDatabase(setup = true) {
+    if (instance) {
+        return;
+    }
 
-        const dbFile = config.databaseFile;
-        instance = new SQLite3.Database(dbFile, async function (err) {
-            if (err) {
-                logger.log({
-                    level: 'error',
-                    label: 'sqlite',
-                    message: err.message,
-                });
-                reject(err);
-            } else {
-                logger.log({
-                    level: 'info',
-                    label: 'sqlite',
-                    message: `Opened ${dbFile}`,
-                });
+    const dbFile = config.databaseFile;
+    instance = new SQLite3(dbFile);
 
-                if (setup) {
-                    try {
-                        await prescript();
-                    } catch (error) {
-                        return reject(error);
-                    }
-                }
-
-                resolve();
-            }
+    try {
+        logger.log({
+            level: 'info',
+            label: 'sqlite',
+            message: `Opened ${dbFile}`,
         });
-    });
+
+        if (setup) {
+            await prescript();
+        }
+    } catch (error) {
+        logger.log({
+            level: 'error',
+            label: 'sqlite',
+            message: error.message,
+        });
+        throw error;
+    }
 }
 
 /**
  * @returns {Promise<void>}
  */
 export function closeSQLiteDatabase() {
-    return new Promise(function (resolve, reject) {
-        if (instance) {
-            instance.close(function (err) {
-                if (err) {
-                    logger.log({
-                        level: 'error',
-                        label: 'sqlite',
-                        message: err.message,
-                    });
-                    console.log('e', err);
-                    reject(err);
-                } else {
-                    logger.log({
-                        level: 'info',
-                        label: 'sqlite',
-                        message: `Closed`,
-                    });
-                    instance = undefined;
-                    resolve();
-                }
+    if (instance) {
+        try {
+            instance.close();
+            logger.log({
+                level: 'info',
+                label: 'sqlite',
+                message: `Closed`,
             });
-        } else {
-            resolve();
+            instance = undefined;
+        } catch (error) {
+            logger.log({
+                level: 'error',
+                label: 'sqlite',
+                message: error.message,
+            });
+            throw error;
         }
-    });
+    }
 }
