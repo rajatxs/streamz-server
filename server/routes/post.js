@@ -56,6 +56,7 @@ export function postApiRoutes_v1(instance, options, done) {
                         format: 'url',
                         nullable: true,
                         maxLength: 2048,
+                        default: '',
                     },
                 },
             },

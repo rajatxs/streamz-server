@@ -57,7 +57,7 @@ export async function getPostCollectionByQuery(query, options = {}) {
 export function createPost(data) {
     return insertRow(
         'INSERT INTO posts(title, desc, public, url, user_id) VALUES (?, ?, ?, ?, ?);',
-        [data.title, data.description, data.public, data.url, data.userId],
+        [data.title, data.description, Number(data.public), data.url, data.userId],
     );
 }
 
