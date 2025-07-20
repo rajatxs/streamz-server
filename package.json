@@ -1,7 +1,7 @@
 {
     "name": "@rxpm/streamz-server",
     "version": "0.1.11",
-    "description": "Streamz backend server",
+    "description": "Simple video management server",
     "main": "cmd/streamz.js",
     "bin": {
         "streamz": "cmd/streamz.js"
