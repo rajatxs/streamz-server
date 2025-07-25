@@ -1,6 +1,6 @@
 {
     "name": "@rxpm/streamz-server",
-    "version": "0.1.12",
+    "version": "0.2.0",
     "description": "Simple video management server",
     "main": "cmd/streamz.js",
     "bin": {
