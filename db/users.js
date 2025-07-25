@@ -30,6 +30,18 @@ export async function getUserCredentialByUsername(username) {
 }
 
 /**
+ * Check if provided username exists in the database or not
+ * @param {string} username
+ * @returns {Promise<boolean>}
+ */
+export async function isUsernameExists(username) {
+    const row = await getRow('SELECT COUNT(id) as count FROM users_active_view WHERE uname=?;', [
+        username,
+    ]);
+    return row.count > 0;
+}
+
+/**
  * Insert new user record in "users" table
  * @param {Pick<User, 'username'|'name'|'passwordHash'} data
  * @returns {Promise<number>}
@@ -40,16 +52,4 @@ export function createUser(data) {
         data.name,
         data.passwordHash,
     ]);
-}
-
-/**
- * Check if provided username exists in the database or not
- * @param {string} username
- * @returns {Promise<boolean>}
- */
-export async function isUsernameExists(username) {
-    const row = await getRow('SELECT COUNT(id) as count FROM users_active_view WHERE uname=?;', [
-        username,
-    ]);
-    return row.count > 0;
 }

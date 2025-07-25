@@ -1,6 +1,6 @@
 import { getAllTags, getTagsByPostId, insertTag, deleteTag } from '../../services/tag.js';
 import { Tag } from '../../models/Tag.js';
-import logger from '../../utils/logger.js';
+import logger from '../../lib/logger.js';
 
 /**
  * @type {import('fastify').RouteHandler}

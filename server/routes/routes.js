@@ -1,4 +1,4 @@
-import logger from '../../utils/logger.js';
+import logger from '../../lib/logger.js';
 import { handlePing, handleVerification } from '../handlers/handlers.js';
 import { postApiRoutes_v1 } from './post.js';
 import { userApiRoutes_v1 } from './user.js';

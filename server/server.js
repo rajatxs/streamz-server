@@ -5,7 +5,7 @@ import FastifyCORS from '@fastify/cors';
 import FastifyBasicAuth from '@fastify/basic-auth';
 import FastifyRequestContext from '@fastify/request-context';
 import config from '../config.js';
-import logger from '../utils/logger.js';
+import logger from '../lib/logger.js';
 import { requestValidator } from './handlers/auth.js';
 import { apiRoutes } from './routes/routes.js';
 

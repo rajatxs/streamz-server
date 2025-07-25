@@ -4,7 +4,7 @@ import { Post } from '../../models/Post.js';
 import { createWriteStream } from 'fs';
 import { rename, rm } from 'fs/promises';
 import { pipeline } from 'stream';
-import logger from '../../utils/logger.js';
+import logger from '../../lib/logger.js';
 import config from '../../config.js';
 import {
     getPost,

@@ -1,6 +1,6 @@
 import { Post } from '../models/Post.js';
 import { Tag } from '../models/Tag.js';
-import { getRow, getRows, insertRow, updateRow, deleteRow } from '../utils/sqlite.js';
+import { getRow, getRows, insertRow, updateRow, deleteRow } from '../lib/sqlite.js';
 
 /** @returns {Promise<string[]>} */
 export async function getAllTags() {

@@ -3,8 +3,8 @@ import { existsSync } from 'fs';
 import { genSalt, hash } from 'bcryptjs';
 import config from '../config.js';
 import { createUser, isUsernameExists } from '../services/user.js';
-import { openSQLiteDatabase, closeSQLiteDatabase } from '../utils/sqlite.js';
-import logger from '../utils/logger.js';
+import { openSQLiteDatabase, closeSQLiteDatabase } from '../lib/sqlite.js';
+import logger from '../lib/logger.js';
 
 export const createUserCommand = new Command('create-user');
 

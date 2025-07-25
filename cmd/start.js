@@ -4,9 +4,9 @@ import { homedir } from 'os';
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { startServerInstance, stopServerInstance } from '../server/server.js';
-import { openSQLiteDatabase, closeSQLiteDatabase } from '../utils/sqlite.js';
+import { openSQLiteDatabase, closeSQLiteDatabase } from '../lib/sqlite.js';
 import config from '../config.js';
-import logger from '../utils/logger.js';
+import logger from '../lib/logger.js';
 
 export const startCommand = new Command('start');
 
