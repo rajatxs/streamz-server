@@ -14,7 +14,7 @@ import {
     checkPostOwnership,
     updatePostState,
     deletePost,
-} from '../../services/posts.js';
+} from '../../db/post.js';
 
 const pump = util.promisify(pipeline);
 

@@ -1,5 +1,5 @@
 import { UserPublicInfo } from '../../models/User.js';
-import { getUserInfo } from '../../services/user.js';
+import { getUserInfo } from '../../db/user.js';
 
 /**
  * @type {import('fastify').RouteHandler}

@@ -1,4 +1,4 @@
-import { getUserCredentialByUsername } from '../../services/user.js';
+import { getUserCredentialByUsername } from '../../db/user.js';
 
 /**
  * @type {import('fastify').RouteHandler}

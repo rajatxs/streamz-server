@@ -1,5 +1,5 @@
 import { compare } from 'bcryptjs';
-import { getUserCredentialByUsername } from '../../services/user.js';
+import { getUserCredentialByUsername } from '../../db/user.js';
 
 /**
  * Basic authentication handler

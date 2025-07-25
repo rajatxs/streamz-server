@@ -1,4 +1,4 @@
-import { getAllTags, getTagsByPostId, insertTag, deleteTag } from '../../services/tag.js';
+import { getAllTags, getTagsByPostId, insertTag, deleteTag } from '../../db/tag.js';
 import { Tag } from '../../models/Tag.js';
 import logger from '../../lib/logger.js';
 
